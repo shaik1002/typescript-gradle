@@ -1,10 +1,9 @@
 plugins {
-	id "com.gradle.plugin-publish" version "0.9.2"
+    id "com.gradle.plugin-publish" version "0.9.2"
 }
 
 repositories {
-	mavenCentral()
-	jcenter()
+    mavenCentral()
 }
 
 apply plugin: 'groovy'
@@ -13,103 +12,103 @@ apply plugin: 'maven-publish'
 
 // Write the plugin's classpath to a file to share with the tests
 task createClasspathManifest {
-	def outputDir = file("$buildDir/$name")
+    def outputDir = file("$buildDir/$name")
 
-	inputs.files sourceSets.main.runtimeClasspath
-	outputs.dir outputDir
+    inputs.files sourceSets.main.runtimeClasspath
+    outputs.dir outputDir
 
-	doLast {
-		outputDir.mkdirs()
-		file("$outputDir/plugin-classpath.txt").text = sourceSets.main.runtimeClasspath.join("\n")
-	}
+    doLast {
+        outputDir.mkdirs()
+        file("$outputDir/plugin-classpath.txt").text = sourceSets.main.runtimeClasspath.join("\n")
+    }
 }
 
 sourceCompatibility = 1.6
 targetCompatibility = 1.6
 
 dependencies {
-	compile gradleApi()
+    implementation gradleApi()
 
-	testCompile gradleTestKit()
-	testCompile 'junit:junit:4.12'
-	testRuntime files(createClasspathManifest)
+    testImplementation gradleTestKit()
+    testImplementation 'junit:junit:4.12'
+    testRuntimeOnly files(createClasspathManifest)
 }
 
 ext {
-	encoding = "UTF-8"
+    encoding = "UTF-8"
 }
 
-tasks.eclipse << {
-	File prefs = project.file('.settings/org.eclipse.core.resources.prefs');
-	if(!prefs.exists()) {
-		project.file('.settings/org.eclipse.core.resources.prefs')<< "eclipse.preferences.version=1\nencoding/<project>=$encoding\n";
-	}
+tasks.eclipse.doLast {
+    File prefs = project.file('.settings/org.eclipse.core.resources.prefs')
+    if (!prefs.exists()) {
+        project.file('.settings/org.eclipse.core.resources.prefs') << "eclipse.preferences.version=1\nencoding/=$encoding\n"
+    }
 }
 
 tasks.withType(GroovyCompile) {
-	options.encoding = encoding
+    options.encoding = encoding
 }
 tasks.withType(JavaCompile) {
-	options.encoding = encoding
+    options.encoding = encoding
 }
 
 task sourceJar(type: Jar) {
-	classifier = 'sources'
-	from sourceSets.main.allSource
+    classifier = 'sources'
+    from sourceSets.main.allSource
 }
 
-task javadocJar (type: Jar, dependsOn: [javadoc, groovydoc]) {
-	classifier = 'javadoc'
-	from javadoc.destinationDir
-	from groovydoc.destinationDir
+task javadocJar(type: Jar, dependsOn: [javadoc, groovydoc]) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+    from groovydoc.destinationDir
 }
 
 javadoc {
-	options {
-		links 'http://www.gradle.org/docs/current/javadoc/', 'http://docs.oracle.com/javase/7/docs/api/'
-	}
+    options {
+        links 'http://www.gradle.org/docs/current/javadoc/', 'http://docs.oracle.com/javase/7/docs/api/'
+    }
 }
 
-group='de.richsource.gradle.plugins'
+group = 'de.richsource.gradle.plugins'
 publishing {
-	publications {
-		mavenJava(MavenPublication) {
-			from components.java
-			artifact javadocJar { classifier = 'javadoc' }
-			artifact sourceJar { classifier = 'sources' }
-			pom.withXml {
-				def root = asNode()
-				root.appendNode('name', 'TypeScript Gradle plugin')
-				root.appendNode('description', 'Gradle plugin to support TypeScript related tasks.')
-				root.appendNode('inceptionYear', '2014')
-				def license = root.appendNode('licenses').appendNode('license')
-				license.appendNode('name', 'Apache License, Version 2.0')
-				license.appendNode('url', 'http://www.apache.org/licenses/LICENSE-2.0.txt')
-			}
-		}
-	}
-	repositories {
-		maven {
-			url new File(rootProject.projectDir, 'repo').toURI()
-		}
-	}
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifact javadocJar { classifier = 'javadoc' }
+            artifact sourceJar { classifier = 'sources' }
+            pom.withXml {
+                def root = asNode()
+                root.appendNode('name', 'TypeScript Gradle plugin')
+                root.appendNode('description', 'Gradle plugin to support TypeScript related tasks.')
+                root.appendNode('inceptionYear', '2014')
+                def license = root.appendNode('licenses').appendNode('license')
+                license.appendNode('name', 'Apache License, Version 2.0')
+                license.appendNode('url', 'http://www.apache.org/licenses/LICENSE-2.0.txt')
+            }
+        }
+    }
+    repositories {
+        maven {
+            url new File(rootProject.projectDir, 'repo').toURI()
+        }
+    }
 }
 
 pluginBundle {
-	website = 'https://github.com/sothmann/typescript-gradle-plugin'
-	vcsUrl = 'https://github.com/sothmann/typescript-gradle-plugin'
-	description = 'This plugin makes it easy to build TypeScript projects using Gradle. Among other things, the plugin provides a task to run the TypeScript compiler.'
-	tags = ['typescript']
+    website = 'https://github.com/sothmann/typescript-gradle-plugin'
+    vcsUrl = 'https://github.com/sothmann/typescript-gradle-plugin'
+    description = 'This plugin makes it easy to build TypeScript projects using Gradle. Among other things, the plugin provides a task to run the TypeScript compiler.'
+    tags = ['typescript']
 
-	plugins {
-		typescriptPlugin {
-			id = 'de.richsource.gradle.plugins.typescript'
-			displayName = 'TypeScript Gradle Plugin'
-		}
-	}
+    plugins {
+        typescriptPlugin {
+            id = 'de.richsource.gradle.plugins.typescript'
+            displayName = 'TypeScript Gradle Plugin'
+        }
+    }
 
-	mavenCoordinates {
-		groupId = "de.richsource.gradle.plugins"
-		artifactId = "typescript-gradle-plugin"
-	}
+    mavenCoordinates {
+        groupId = "de.richsource.gradle.plugins"
+        artifactId = "typescript-gradle-plugin"
+    }
 }
